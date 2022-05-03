@@ -1,0 +1,17 @@
+{
+  "name": "proxytext",
+  "version": "1.0.0",
+  "description": "Webserver that return text from specified Url using Puppeteer",
+  "main": "index.js",
+  "author": "tretrauit",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.1",
+    "nodemon": "^2.0.16",
+    "puppeteer": "^13.7.0"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  }
+}
