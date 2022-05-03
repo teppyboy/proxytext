@@ -6,6 +6,10 @@ const app = express()
 
 app.get('/*', async (req, res) => {
 	const url = req.url.substring(1)
+	if (url.length === 0) {
+		res.send('Hello world!')
+		return
+	}
 	console.log("Got url:", url)
 	console.log("Launching puppeteer...")
 	const browser = await puppeteer.launch({
