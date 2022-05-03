@@ -8,7 +8,8 @@
   "dependencies": {
     "express": "^4.18.1",
     "nodemon": "^2.0.16",
-    "puppeteer": "^13.7.0"
+    "puppeteer": "^13.7.0",
+    "serve-favicon": "^2.5.0"
   },
   "scripts": {
     "start": "node index.js",
