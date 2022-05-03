@@ -8,7 +8,9 @@ app.get('/*', async (req, res) => {
 	const url = req.url.substring(1)
 	console.log("Got url:", url)
 	console.log("Launching puppeteer...")
-	const browser = await puppeteer.launch({})
+	const browser = await puppeteer.launch({
+		args: ['--no-sandbox', '--disable-setuid-sandbox']
+	})
 	const page = await browser.newPage()
 	console.log("Opening url...")
 	await page.goto(url)
