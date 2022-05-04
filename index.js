@@ -1,3 +1,4 @@
+'use strict';
 const puppeteer = require('puppeteer');
 const express = require('express');
 const favicon = require('serve-favicon')
