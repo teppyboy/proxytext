@@ -1,6 +1,6 @@
 {
     "port": 8080,
-    "delay": 10000,
+    "delay": 15000,
     "chrome_args": [
         "--no-sandbox",
         "--disable-setuid-sandbox"

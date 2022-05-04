@@ -86,19 +86,20 @@ async function fetchText(url) {
 app.use(favicon(path.join(__dirname, 'favicon.ico')))
 app.get('/*', async (req, res) => {
 	let url = req.url.substring(1)
-	console.log(`Got requrest from ${req.ip} (proxy: ${req.ips}): ${url}`)
+	const ip = req.ip.replace('::ffff:', '')
+	console.log(`Got requrest from ${ip} (proxy: ${req.ips}): ${url}`)
 	if (url.length === 0) {
 		res.send('Hello world!')
 		return
 	}
-	if (!config.unrestricted.includes(req.ip)) {
+	if (!config.unrestricted.includes(ip)) {
 		console.log("Checking ip...")
-		if (delayer.isRestricted(req.ip)) {
-			console.log(`${req.ip} is restricted`)
+		if (delayer.isRestricted(ip)) {
+			console.log(`${ip} is restricted`)
 			res.status(429).send('Too many requests.')
 			return
 		}
-		delayer.add(req.ip, config.delay)
+		delayer.add(ip, config.delay)
 	}
 	if (!url.includes("://")) {
 		url = `https://${url}`
