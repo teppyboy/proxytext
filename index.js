@@ -39,8 +39,7 @@ app.get('/*', async (req, res) => {
 		res.send(text)
 	} catch (err) {
 		console.log("Error:", err)
-		res.status(500)
-		res.send(err.message)
+		res.status(500).send(err.message) 
 	}
 });
 app.listen(port, function () {
