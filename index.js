@@ -23,13 +23,12 @@ async function fetchText(url) {
 
 app.use(favicon(path.join(__dirname, 'favicon.ico')))
 app.get('/*', async (req, res) => {
-	console.log(`Got requrest from ${req.ip} (${req.ips})`)
 	const url = req.url.substring(1)
+	console.log(`Got requrest from ${req.ip} (${req.ips}): ${url}`)
 	if (url.length === 0) {
 		res.send('Hello world!')
 		return
 	}
-	console.log("Got url:", url)
 	try {
 		const text = await fetchText(url)
 		console.log("Sending result...")
