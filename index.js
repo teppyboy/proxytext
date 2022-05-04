@@ -24,11 +24,14 @@ async function fetchText(url) {
 
 app.use(favicon(path.join(__dirname, 'favicon.ico')))
 app.get('/*', async (req, res) => {
-	const url = req.url.substring(1)
-	console.log(`Got requrest from ${req.ip} (${req.ips}): ${url}`)
+	let url = req.url.substring(1)
+	console.log(`Got requrest from ${req.ip} (proxy: ${req.ips}): ${url}`)
 	if (url.length === 0) {
 		res.send('Hello world!')
 		return
+	}
+	if (!url.includes("://")) {
+		url = `https://${url}`
 	}
 	try {
 		const text = await fetchText(url)
