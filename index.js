@@ -3,14 +3,75 @@ const puppeteer = require('puppeteer');
 const express = require('express');
 const favicon = require('serve-favicon')
 const path = require('path')
+const fs = require('fs');
 
-const port = process.env.PORT || 8080;
+class Delayer {
+	constructor(ips) {
+		if (ips == null) {
+			ips = {}
+		}
+		this.ips = ips
+		this.deleteExpired()
+	}
+	deleteExpired() {
+		for (const [ip, val] of Object.entries(this.ips)) {
+			if (val.expires != null && val.expires < new Date().getTime()) {
+				delete this.ips[ip]
+			}
+		}
+	}
+	delete(ip) {
+		delete this.ips[ip]
+	}
+	add(ip, duration) {
+		if (duration == null) {
+			duration = 0
+		}
+		let expires = new Date().getTime() + duration
+		if (duration <= 0) {
+			expires = null	// never expires (perm ban)
+		}
+		this.ips[ip] = {
+			expires: expires
+		}
+		if (duration > 0) {
+			setTimeout(() => {
+				this.delete(ip)
+			}, duration)
+		}
+	}
+	isRestricted(ip) {
+		return this.ips[ip] != null
+	}
+}
+
+let config
+const configPath = path.join(__dirname, 'config.json')
+if (fs.existsSync(configPath)) {
+	config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+} else {
+	config = {
+		port: 8080,
+		delay: 30000,
+		chrome_args: [
+			'--no-sandbox',
+			'--disable-setuid-sandbox'
+		],
+		unrestricted: [
+			'127.0.0.1'
+		]
+	}
+	fs.writeFileSync(configPath, JSON.stringify(config, null, 4))
+}
+
+const port = process.env.PORT || config.port;
+const delayer = new Delayer()
 const app = express()
 
 async function fetchText(url) {
 	console.log("Launching puppeteer...")
 	const browser = await puppeteer.launch({
-		args: ['--no-sandbox', '--disable-setuid-sandbox']
+		args: config.chrome_args
 	})
 	const page = await browser.newPage()
 	console.log("Opening url...")
@@ -29,6 +90,15 @@ app.get('/*', async (req, res) => {
 	if (url.length === 0) {
 		res.send('Hello world!')
 		return
+	}
+	if (!config.unrestricted.includes(req.ip)) {
+		console.log("Checking ip...")
+		if (delayer.isRestricted(req.ip)) {
+			console.log(`${req.ip} is restricted`)
+			res.status(429).send('Too many requests.')
+			return
+		}
+		delayer.add(req.ip, config.delay)
 	}
 	if (!url.includes("://")) {
 		url = `https://${url}`

@@ -1,0 +1,11 @@
+{
+    "port": 8080,
+    "delay": 10000,
+    "chrome_args": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox"
+    ],
+    "unrestricted": [
+        "127.0.0.1"
+    ]
+}
