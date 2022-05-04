@@ -68,6 +68,15 @@ const port = process.env.PORT || config.port;
 const delayer = new Delayer()
 const app = express()
 
+function isUrlValid(url) {
+    try {
+      new URL(url);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
 async function fetchText(url) {
 	console.log("Launching puppeteer...")
 	const browser = await puppeteer.launch({
@@ -75,12 +84,19 @@ async function fetchText(url) {
 	})
 	const page = await browser.newPage()
 	console.log("Opening url...")
-	await page.goto(url)
-	const content = await page.$eval('*', (el) => el.innerText)
+	let content, success = true;
+	try {
+		await page.goto(url)
+		content = await page.$eval('*', (el) => el.innerText)
+	} catch (err) {
+		console.log("Error:", err)
+		content = err.message
+		success = false
+	}
 	console.log("Closing browser...")
 	await browser.close()
-	console.log("Done!")
-	return content
+	console.log("Done.")
+	return [success, content]
 }
 
 app.use(favicon(path.join(__dirname, 'favicon.ico')))
@@ -92,6 +108,13 @@ app.get('/*', async (req, res) => {
 		res.send('Hello world!')
 		return
 	}
+	if (!url.includes("://")) {
+		url = `https://${url}`
+	}
+	if (!isUrlValid(url)) {
+		res.status(400).send('Invalid URL')
+		return
+	}
 	if (!config.unrestricted.includes(ip)) {
 		console.log("Checking ip...")
 		if (delayer.isRestricted(ip)) {
@@ -101,17 +124,14 @@ app.get('/*', async (req, res) => {
 		}
 		delayer.add(ip, config.delay)
 	}
-	if (!url.includes("://")) {
-		url = `https://${url}`
-	}
-	try {
-		const text = await fetchText(url)
-		console.log("Sending result...")
+	const [success, text] = await fetchText(url)
+	console.log("Sending result...")
+	if (success) {
 		res.send(text)
-	} catch (err) {
-		console.log("Error:", err)
-		res.status(500).send(err.message) 
+	} else {
+		res.status(500).send(text)
 	}
+	
 });
 app.listen(port, function () {
 	console.log(`Running on port ${port}.`)
